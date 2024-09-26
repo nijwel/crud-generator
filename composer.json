@@ -1,9 +1,9 @@
 {
     "name": "nijwel/crud-generator",
     "description": "A package to generate CRUD controllers, models, and migrations.",
+    "version": "1.0.0",
     "type": "library",
     "license": "MIT",
-    "version": "1.0.0",
     "authors": [
         {
             "name": "Nijwel",
@@ -22,7 +22,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Nijwel\\CrudGenerator\\Providers\\CrudServiceProvider"
+                "Nijwel\\CrudGenerator\\CrudServiceProvider"
             ]
         }
     },

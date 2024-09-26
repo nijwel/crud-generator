@@ -1,6 +1,6 @@
 <?php
 
-namespace Nijwe\CrudGenerator\Providers;
+namespace Nijwe\CrudGenerator;
 
 use Illuminate\Support\ServiceProvider;
 
