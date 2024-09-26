@@ -1,10 +1,10 @@
 <?php
 
-namespace Nijwel\CrudGenerator;
+namespace Nijwel\CrudGenerator\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
-class CrudServiceProvider extends ServiceProvider
+class CrudGeneratorServiceProvider extends ServiceProvider
 {
     public function register()
     {

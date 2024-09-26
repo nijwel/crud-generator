@@ -21,7 +21,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Nijwel\\CrudGenerator\\CrudServiceProvider"
+                "Nijwel\\CrudGenerator\\providers\\CrudGeneratorServiceProvider"
             ]
         }
     },
