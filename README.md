@@ -1,7 +1,7 @@
 # Laravel CRUD Generator Package
 
 This Laravel package helps to automate the creation of basic CRUD (Create, Read, Update, Delete) functionality, including models, controllers, and migrations. You can also generate API-specific controllers by passing the `--api` option when running the command.
-
+github : https://github.com/nijwel/crud-generator.git
 ## Features
 
 - Generate Model, Controller, and Migration files for CRUD functionality.
@@ -28,6 +28,7 @@ php artisan vendor:publish --tag=crud-stubs
 This will copy the stub files into your stubs directory, where you can customize them to fit your needs.
 
 ## Usage
+
 Once the package is installed, you can generate CRUD operations with the following command:
 
 ### 1. Generate Standard CRUD (Model, Controller, Migration)
