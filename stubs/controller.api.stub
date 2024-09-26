@@ -1,0 +1,98 @@
+<?php
+
+namespace App\Http\Controllers{{ api }}{{ namespacePath }};
+
+use App\Models{{ namespacePath }}\{{ model }};
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Controller;
+
+
+class {{ controller }} extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        ${{ modelVariablePlural }} = {{ model }}::all();
+
+        return response()->json([
+            'status' => 201,
+            '{{ modelVariablePlural }}' => ${{ modelVariablePlural }}
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validatedData = Validator::make($request->all(), [
+            // add validation rules
+        ]);
+
+        if ($validatedData->fails()) {
+            return response()->json([
+                'status' => 401,
+                'errors' => $validatedData->errors()
+            ]);
+        }
+
+        ${{ modelVariable }} = {{ model }}::create($request->all());
+
+        return response()->json([
+            'success' => 'Create Successfully!',
+            'status' => 201,
+            '{{ modelVariable }}' => ${{ modelVariable }}
+        ]);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show({{ model }} ${{ modelVariable }})
+    {
+        return response()->json([
+            'status' => 201,
+            '{{ modelVariable }}' => ${{ modelVariable }}
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, {{ model }} ${{ modelVariable }})
+    {
+        $validatedData = Validator::make($request->all(), [
+            // add validation rules
+        ]);
+
+        if ($validatedData->fails()) {
+            return response()->json([
+                'status' => 401,
+                'errors' => $validatedData->errors()
+            ]);
+        }
+
+        ${{ modelVariable }}->update($request->all());
+
+        return response()->json([
+            'success' => 'Update Successfully!',
+            'status' => 201,
+            '{{ modelVariable }}' => ${{ modelVariable }}
+        ]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy({{ model }} ${{ modelVariable }})
+    {
+        ${{ modelVariable }}->delete();
+        return response()->json([
+            'success' => 'Delete Successfully!',
+            'status' => 201,
+        ]);
+    }
+}

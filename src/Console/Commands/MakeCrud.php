@@ -8,22 +8,57 @@ use Illuminate\Support\Str;
 
 class MakeCrud extends Command
 {
-    protected $signature = 'make:crud {name}';
+    // Add --api option in the command signature
+    protected $signature = 'make:crud {name} {--api} {--db} {--m}';
     protected $description = 'Create a controller, model, and migration with CRUD methods';
 
     public function handle()
     {
         $name = $this->argument('name');
+        $isApi = $this->option('api'); // Check if the --api option is provided
+        $isDB = $this->option('db'); // Check if the --db option is provided
+        $isModel = $this->option('m'); // Check if the --model option is provided
+
         $segments = explode('/', $name);
         $modelName = array_pop($segments);
-        $namespacePath = implode('/', $segments);
+        $namespacePath = !empty($segments) ?  implode('\\', $segments) : ''; // Convert to namespace format
 
         $controllerName = "{$modelName}Controller";
         $tableName = Str::plural(Str::snake($modelName));
 
-        $this->createModel($modelName, $namespacePath);
-        $this->createMigration($tableName);
-        $this->createController($controllerName, $modelName, $namespacePath);
+        // $isModel ? $this->createModel($modelName, $namespacePath) : '';
+        // $isDB ? $this->createMigration($tableName) : '';
+        // $isApi ? $this->createController($controllerName, $modelName, $namespacePath, $isApi) : '';
+
+        // if($isModel){
+        //     $this->createModel($modelName, $namespacePath);
+        // }
+
+        // if($isDB){
+        //     $this->createMigration($tableName);
+        // }
+
+        // if ($isApi) {
+        //     $this->createController($controllerName, $modelName, $namespacePath, $isApi);
+        // }
+
+        if (!$isApi && !$isDB && !$isModel) {
+            $this->createModel($modelName, $namespacePath);
+            $this->createMigration($tableName);
+            $this->createController($controllerName, $modelName, $namespacePath, $isApi);
+        } else {
+            // Execute based on provided options
+            if ($isModel) {
+                $this->createModel($modelName, $namespacePath);
+            }
+            if ($isDB) {
+                $this->createMigration($tableName);
+            }
+            if ($isApi) {
+                $this->createController($controllerName, $modelName, $namespacePath, $isApi);
+            }
+        }
+
 
         $this->info("CRUD for {$name} created successfully.");
     }
@@ -36,6 +71,7 @@ class MakeCrud extends Command
         $modelTemplate = $this->getStub('model');
         $this->replacePlaceholders($modelTemplate, [
             '{{ model }}' => $modelName,
+            '{{ namespacePath }}' => $namespacePath ? "\\{$namespacePath}" : '', // Append namespace if it exists
         ]);
 
         File::put($modelPath, $modelTemplate);
@@ -57,9 +93,9 @@ class MakeCrud extends Command
         $this->info("Migration for table {$tableName} created.");
     }
 
-    protected function createController($controllerName, $modelName, $namespacePath)
+    protected function createController($controllerName, $modelName, $namespacePath, $isApi)
     {
-        $controllerPath = app_path("Http/Controllers/{$namespacePath}/{$controllerName}.php");
+        $controllerPath = $isApi ? app_path("Http/Controllers/API/{$namespacePath}/{$controllerName}.php") : app_path("Http/Controllers/{$namespacePath}/{$controllerName}.php");
         $this->ensureDirectoryExists(dirname($controllerPath));
 
         if (File::exists($controllerPath)) {
@@ -69,13 +105,17 @@ class MakeCrud extends Command
 
         $modelVariable = lcfirst($modelName);
         $modelPlural = Str::plural($modelVariable);
-        $controllerTemplate = $this->getStub('controller');
+
+        // Select the appropriate stub file based on the --api option
+        $controllerTemplate = $isApi ? $this->getStub('controller.api') : $this->getStub('controller');
 
         $this->replacePlaceholders($controllerTemplate, [
             '{{ controller }}' => $controllerName,
             '{{ model }}' => $modelName,
             '{{ modelVariable }}' => $modelVariable,
             '{{ modelVariablePlural }}' => $modelPlural,
+            '{{ namespacePath }}' => $namespacePath ? "\\{$namespacePath}" : '', // Append namespace if it exists
+            '{{ api }}' => $isApi ? "\\API" : '', // Append namespace if it exists
         ]);
 
         File::put($controllerPath, $controllerTemplate);
