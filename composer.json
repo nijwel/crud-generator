@@ -1,7 +1,6 @@
 {
     "name": "nijwel/crud-generator",
     "description": "A package to generate CRUD controllers, models, and migrations.",
-    "version": "1.0.0",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -28,7 +27,7 @@
     },
     "scripts": {
         "post-root-package-install": [
-            "@php artisan vendor:publish --tag=nijwel-crud --force"
+            "@php artisan nijwel:publish --tag=nijwel-crud --force"
         ]
     }
 }
