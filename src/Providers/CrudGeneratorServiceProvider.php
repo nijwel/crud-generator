@@ -3,6 +3,7 @@
 namespace Nijwel\CrudGenerator\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Nijwel\CrudGenerator\Console\Commands\MakeCrud;
 
 class CrudGeneratorServiceProvider extends ServiceProvider
 {
@@ -16,6 +17,10 @@ class CrudGeneratorServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        $this->commands([
+            MakeCrud::class,
+        ]);
+
         // Publish stubs so that users can customize them
         $this->publishes([
             __DIR__ . '/../../stubs' => base_path('stubs/nijwel-crud-package'),

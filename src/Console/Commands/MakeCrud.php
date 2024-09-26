@@ -3,7 +3,6 @@
 namespace Nijwel\CrudGenerator\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -15,22 +14,26 @@ class MakeCrud extends Command
     public function handle()
     {
         $name = $this->argument('name');
-        $controllerName = "{$name}Controller";
-        $modelName = $name;
-        $tableName = Str::plural(Str::snake($name));
+        $segments = explode('/', $name);
+        $modelName = array_pop($segments);
+        $namespacePath = implode('/', $segments);
 
-        $this->createModel($modelName);
+        $controllerName = "{$modelName}Controller";
+        $tableName = Str::plural(Str::snake($modelName));
+
+        $this->createModel($modelName, $namespacePath);
         $this->createMigration($tableName);
-        $this->createController($controllerName, $modelName);
+        $this->createController($controllerName, $modelName, $namespacePath);
 
         $this->info("CRUD for {$name} created successfully.");
     }
 
-    protected function createModel($modelName)
+    protected function createModel($modelName, $namespacePath)
     {
-        $modelPath = app_path("Models/{$modelName}.php");
-        $modelTemplate = $this->getStub('model');
+        $modelPath = app_path("Models/{$namespacePath}/{$modelName}.php");
+        $this->ensureDirectoryExists(dirname($modelPath));
 
+        $modelTemplate = $this->getStub('model');
         $this->replacePlaceholders($modelTemplate, [
             '{{ model }}' => $modelName,
         ]);
@@ -54,9 +57,11 @@ class MakeCrud extends Command
         $this->info("Migration for table {$tableName} created.");
     }
 
-    protected function createController($controllerName, $modelName)
+    protected function createController($controllerName, $modelName, $namespacePath)
     {
-        $controllerPath = app_path("Http/Controllers/{$controllerName}.php");
+        $controllerPath = app_path("Http/Controllers/{$namespacePath}/{$controllerName}.php");
+        $this->ensureDirectoryExists(dirname($controllerPath));
+
         if (File::exists($controllerPath)) {
             $this->error("Controller {$controllerName} already exists!");
             return;
@@ -86,6 +91,13 @@ class MakeCrud extends Command
     {
         foreach ($replacements as $search => $replace) {
             $template = str_replace($search, $replace, $template);
+        }
+    }
+
+    protected function ensureDirectoryExists($directory)
+    {
+        if (!File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
         }
     }
 }
