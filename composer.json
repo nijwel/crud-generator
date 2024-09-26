@@ -3,6 +3,7 @@
     "description": "A package to generate CRUD controllers, models, and migrations.",
     "type": "library",
     "license": "MIT",
+    "version": "1.0.0",
     "authors": [
         {
             "name": "Nijwel",
