@@ -23,7 +23,7 @@ class CrudGeneratorServiceProvider extends ServiceProvider
 
         // Publish stubs so that users can customize them
         $this->publishes([
-            __DIR__ . '/../../stubs' => base_path('stubs/nijwel-crud-package'),
+            __DIR__ . '/../../stubs' => base_path('stubs/crud-package'),
         ], 'crud-stubs');
     }
 }
