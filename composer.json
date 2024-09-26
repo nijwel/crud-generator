@@ -24,10 +24,5 @@
                 "Nijwel\\CrudGenerator\\providers\\CrudGeneratorServiceProvider"
             ]
         }
-    },
-    "scripts": {
-        "post-root-package-install": [
-            "@php artisan nijwel:publish --tag=nijwel-crud --force"
-        ]
     }
 }
