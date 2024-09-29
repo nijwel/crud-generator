@@ -9,7 +9,8 @@ use Illuminate\Support\Str;
 class MakeCrud extends Command
 {
     // Add --api option in the command signature
-    protected $signature = 'make:crud {name} {--api} {--db} {--m}';
+    // Add --api, --db, --model (m) options in the command signature
+    protected $signature = 'make:crud {name} {--api} {--db} {--m} {--r}';
     protected $description = 'Create a controller, model, and migration with CRUD methods';
 
     public function handle()
@@ -18,34 +19,21 @@ class MakeCrud extends Command
         $isApi = $this->option('api'); // Check if the --api option is provided
         $isDB = $this->option('db'); // Check if the --db option is provided
         $isModel = $this->option('m'); // Check if the --model option is provided
+        $isRoute = $this->option('r'); // Check if the --model option is provided
 
         $segments = explode('/', $name);
         $modelName = array_pop($segments);
-        $namespacePath = !empty($segments) ?  implode('\\', $segments) : ''; // Convert to namespace format
+        $namespacePath = !empty($segments) ? implode('\\', $segments) : ''; // Convert to namespace format
 
         $controllerName = "{$modelName}Controller";
         $tableName = Str::plural(Str::snake($modelName));
 
-        // $isModel ? $this->createModel($modelName, $namespacePath) : '';
-        // $isDB ? $this->createMigration($tableName) : '';
-        // $isApi ? $this->createController($controllerName, $modelName, $namespacePath, $isApi) : '';
-
-        // if($isModel){
-        //     $this->createModel($modelName, $namespacePath);
-        // }
-
-        // if($isDB){
-        //     $this->createMigration($tableName);
-        // }
-
-        // if ($isApi) {
-        //     $this->createController($controllerName, $modelName, $namespacePath, $isApi);
-        // }
-
-        if (!$isApi && !$isDB && !$isModel) {
+        // If no option is provided, create all components
+        if (!$isApi && !$isDB && !$isModel && !$isRoute) {
             $this->createModel($modelName, $namespacePath);
             $this->createMigration($tableName);
             $this->createController($controllerName, $modelName, $namespacePath, $isApi);
+            $this->createRoutes($controllerName, $modelName, $namespacePath , $isApi);
         } else {
             // Execute based on provided options
             if ($isModel) {
@@ -54,12 +42,15 @@ class MakeCrud extends Command
             if ($isDB) {
                 $this->createMigration($tableName);
             }
-            if ($isApi) {
+            if ($isApi || !$isApi) {
                 $this->createController($controllerName, $modelName, $namespacePath, $isApi);
+            }
+            if ($isRoute || !$isRoute) {
+                $this->createRoutes($controllerName, $modelName, $namespacePath , $isApi);
             }
         }
 
-
+        // Display success message
         $this->info("CRUD for {$name} created successfully.");
     }
 
@@ -115,12 +106,141 @@ class MakeCrud extends Command
             '{{ modelVariable }}' => $modelVariable,
             '{{ modelVariablePlural }}' => $modelPlural,
             '{{ namespacePath }}' => $namespacePath ? "\\{$namespacePath}" : '', // Append namespace if it exists
-            '{{ api }}' => $isApi ? "\\API" : '', // Append namespace if it exists
+            '{{ api }}' => $isApi ? "\\API" : '', // Append namespace if it's an API
         ]);
 
         File::put($controllerPath, $controllerTemplate);
         $this->info("Controller {$controllerName} created.");
     }
+
+    // protected function createRoutes($controllerName, $modelName, $isApi)
+    // {
+    //     // Set the appropriate route path
+    //     $routesFilePath = base_path($isApi ? 'routes/api.php' : 'routes/web.php');
+
+    //     // Load the routes stub
+    //     $routeTemplate = $this->getStub('routes');
+
+    //     // Replace placeholders in the route template
+    //     $this->replacePlaceholders($routeTemplate, [
+    //         '{{name}}' => Str::snake($modelName),
+    //         '{{controller}}' => $controllerName,
+    //     ]);
+
+
+    //     // Add the route group to the appropriate routes file
+    //     File::append($routesFilePath, $routeTemplate);
+    //     $this->info("Routes for {$controllerName} added to " . ($isApi ? 'api.php' : 'web.php'));
+    // }
+
+    // protected function createRoutes($controllerName, $modelName, $isApi)
+    // {
+    //     // Set the appropriate route file path (web.php or api.php)
+    //     $routesFilePath = base_path($isApi ? 'routes/api.php' : 'routes/web.php');
+
+    //     // Load the routes stub
+    //     $routeTemplate = $this->getStub('routes');
+
+    //     // Replace placeholders in the route template
+    //     $this->replacePlaceholders($routeTemplate, [
+    //         '{{name}}' => Str::snake($modelName),
+    //         '{{controller}}' => $controllerName,
+    //     ]);
+
+    //     // Check if the routes file exists
+    //     if (File::exists($routesFilePath)) {
+    //         // Read the file content
+    //         $fileContent = File::get($routesFilePath);
+
+    //         // Find the last occurrence of }); or }
+    //         $position = strrpos($fileContent, '});');
+
+    //         if ($position === false) {
+    //             // If '});' is not found, try finding the last '}'
+    //             $position = strrpos($fileContent, '}');
+    //         }
+
+    //         if ($position !== false) {
+    //             // Insert the new route before the last '});' or '}'
+    //             $newContent = substr_replace($fileContent, PHP_EOL . $routeTemplate . PHP_EOL, $position, 0);
+
+    //             // Write the updated content back to the routes file
+    //             File::put($routesFilePath, $newContent);
+    //             $this->info("Routes for {$controllerName} added to " . ($isApi ? 'api.php' : 'web.php') . " before the last });");
+    //         } else {
+    //             // If no closing }); or } is found, append the routes to the file
+    //             File::append($routesFilePath, PHP_EOL . $routeTemplate);
+    //             $this->info("Routes for {$controllerName} appended to " . ($isApi ? 'api.php' : 'web.php'));
+    //         }
+    //     } else {
+    //         $this->error("Routes file not found at {$routesFilePath}");
+    //     }
+    // }
+
+    protected function createRoutes($controllerName, $modelName, $namespacePath, $isApi)
+{
+    // Set the appropriate route file path (web.php or api.php)
+    $routesFilePath = base_path($isApi ? 'routes/api.php' : 'routes/web.php');
+
+    // Load the routes stub
+    $routeTemplate = $this->getStub('routes');
+
+    // Replace placeholders in the route template
+    $this->replacePlaceholders($routeTemplate, [
+        '{{name}}' => Str::snake($modelName),
+        '{{controller}}' => $controllerName,
+    ]);
+
+    // Check if the routes file exists
+    if (File::exists($routesFilePath)) {
+        // Read the file content
+        $fileContent = File::get($routesFilePath);
+
+        // Handle the namespace path for the controller
+        $namespace = "use App\Http\Controllers";
+        if (!empty($namespacePath)) {
+            // If there is a namespace, append it
+            $namespace .= "\\$namespacePath";
+        }
+        $namespace .= "\\$controllerName;\n";
+
+        // Check if the namespace is already present at the top of the file
+        if (strpos($fileContent, $namespace) === false) {
+            // Find the position right after the `<?php` opening tag
+            $position = strpos($fileContent, "<?php") + strlen("<?php\n");
+
+            // Insert the namespace right after the `<?php` tag
+            $fileContent = substr_replace($fileContent, $namespace, $position, 0);
+        }
+
+        // Find the last occurrence of '});' or '}'
+        $position = strrpos($fileContent, '});');
+        if ($position === false) {
+            // If '});' is not found, try finding the last '}'
+            $position = strrpos($fileContent, '}');
+        }
+
+        if ($position !== false) {
+            // Insert the new route before the last '});' or '}'
+            $newContent = substr_replace($fileContent, PHP_EOL . $routeTemplate . PHP_EOL, $position, 0);
+
+            // Write the updated content back to the routes file
+            File::put($routesFilePath, $newContent);
+            $this->info("Routes for {$controllerName} added to " . ($isApi ? 'api.php' : 'web.php') . " before the last });");
+        } else {
+            // If no closing '});' or '}' is found, append the routes to the file
+            File::append($routesFilePath, PHP_EOL . $routeTemplate);
+            $this->info("Routes for {$controllerName} appended to " . ($isApi ? 'api.php' : 'web.php'));
+        }
+    } else {
+        $this->error("Routes file not found at {$routesFilePath}");
+    }
+}
+
+
+
+
+
 
     protected function getStub($type)
     {
