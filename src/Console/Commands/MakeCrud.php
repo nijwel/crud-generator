@@ -177,65 +177,135 @@ class MakeCrud extends Command
     //     }
     // }
 
+    // protected function createRoutes($controllerName, $modelName, $namespacePath, $isApi)
+    // {
+    //     // Set the appropriate route file path (web.php or api.php)
+    //     $routesFilePath = base_path($isApi ? 'routes/api.php' : 'routes/web.php');
+
+    //     // Load the routes stub
+    //     $routeTemplate = $this->getStub('routes');
+
+    //     // Replace placeholders in the route template
+    //     $this->replacePlaceholders($routeTemplate, [
+    //         '{{name}}' => Str::snake($modelName),
+    //         '{{controller}}' => $controllerName,
+    //     ]);
+
+    //     // Check if the routes file exists
+    //     if (File::exists($routesFilePath)) {
+    //         // Read the file content
+    //         $fileContent = File::get($routesFilePath);
+
+    //         // Handle the namespace path for the controller
+    //         $namespace = "use App\Http\Controllers";
+    //         if (!empty($namespacePath)) {
+    //             // If there is a namespace, append it
+    //             $namespace .= "\\$namespacePath";
+    //         }
+    //         $namespace .= "\\$controllerName;\n";
+
+    //         // Check if the namespace is already present at the top of the file
+    //         if (strpos($fileContent, $namespace) === false) {
+    //             // Find the position right after the `<?php` opening tag
+    //             $position = strpos($fileContent, "<?php") + strlen("<?php\n");
+
+    //             // Insert the namespace right after the `<?php` tag
+    //             $fileContent = substr_replace($fileContent, $namespace, $position, 0);
+    //         }
+
+    //         // Find the last occurrence of '});' or '}'
+    //         $position = strrpos($fileContent, '});');
+    //         if ($position === false) {
+    //             // If '});' is not found, try finding the last '}'
+    //             $position = strrpos($fileContent, '}');
+    //         }
+
+    //         if ($position !== false) {
+    //             // Insert the new route before the last '});' or '}'
+    //             $newContent = substr_replace($fileContent, PHP_EOL . $routeTemplate . PHP_EOL, $position, 0);
+
+    //             // Write the updated content back to the routes file
+    //             File::put($routesFilePath, $newContent);
+    //             $this->info("Routes for {$controllerName} added to " . ($isApi ? 'api.php' : 'web.php') . " before the last });");
+    //         } else {
+    //             // If no closing '});' or '}' is found, append the routes to the file
+    //             File::append($routesFilePath, PHP_EOL . $routeTemplate);
+    //             $this->info("Routes for {$controllerName} appended to " . ($isApi ? 'api.php' : 'web.php'));
+    //         }
+    //     } else {
+    //         $this->error("Routes file not found at {$routesFilePath}");
+    //     }
+    // }
+
     protected function createRoutes($controllerName, $modelName, $namespacePath, $isApi)
-{
-    // Set the appropriate route file path (web.php or api.php)
-    $routesFilePath = base_path($isApi ? 'routes/api.php' : 'routes/web.php');
+    {
+        // Set the appropriate route file path (web.php or api.php)
+        $routesFilePath = base_path($isApi ? 'routes/api.php' : 'routes/web.php');
 
-    // Load the routes stub
-    $routeTemplate = $this->getStub('routes');
+        // Load the routes stub
+        $routeTemplate = $this->getStub('routes');
 
-    // Replace placeholders in the route template
-    $this->replacePlaceholders($routeTemplate, [
-        '{{name}}' => Str::snake($modelName),
-        '{{controller}}' => $controllerName,
-    ]);
+        // Replace placeholders in the route template
+        $this->replacePlaceholders($routeTemplate, [
+            '{{name}}' => Str::snake($modelName),
+            '{{controller}}' => $controllerName,
+        ]);
 
-    // Check if the routes file exists
-    if (File::exists($routesFilePath)) {
-        // Read the file content
-        $fileContent = File::get($routesFilePath);
+        // Check if the routes file exists
+        if (File::exists($routesFilePath)) {
+            // Read the file content
+            $fileContent = File::get($routesFilePath);
 
-        // Handle the namespace path for the controller
-        $namespace = "use App\Http\Controllers";
-        if (!empty($namespacePath)) {
-            // If there is a namespace, append it
-            $namespace .= "\\$namespacePath";
-        }
-        $namespace .= "\\$controllerName;\n";
+            // Check if the new route already exists
+            if (strpos($fileContent, $routeTemplate) !== false) {
+                $this->warn("The route for '{$controllerName}' already exists.");
+                if (!$this->confirm('Do you want to overwrite it?')) {
+                    $this->info('Operation cancelled.');
+                    return;
+                }
+            }
 
-        // Check if the namespace is already present at the top of the file
-        if (strpos($fileContent, $namespace) === false) {
-            // Find the position right after the `<?php` opening tag
-            $position = strpos($fileContent, "<?php") + strlen("<?php\n");
+            // Handle the namespace path for the controller
+            $namespace = "use App\Http\Controllers";
+            if (!empty($namespacePath)) {
+                // If there is a namespace, append it
+                $namespace .= "\\$namespacePath";
+            }
+            $namespace .= "\\$controllerName;\n";
 
-            // Insert the namespace right after the `<?php` tag
-            $fileContent = substr_replace($fileContent, $namespace, $position, 0);
-        }
+            // Check if the namespace is already present at the top of the file
+            if (strpos($fileContent, $namespace) === false) {
+                // Find the position right after the `<?php` opening tag
+                $position = strpos($fileContent, "<?php") + strlen("<?php\n");
 
-        // Find the last occurrence of '});' or '}'
-        $position = strrpos($fileContent, '});');
-        if ($position === false) {
-            // If '});' is not found, try finding the last '}'
-            $position = strrpos($fileContent, '}');
-        }
+                // Insert the namespace right after the `<?php` tag
+                $fileContent = substr_replace($fileContent, $namespace, $position, 0);
+            }
 
-        if ($position !== false) {
-            // Insert the new route before the last '});' or '}'
-            $newContent = substr_replace($fileContent, PHP_EOL . $routeTemplate . PHP_EOL, $position, 0);
+            // Find the last occurrence of '});' or '}'
+            $position = strrpos($fileContent, '});');
+            if ($position === false) {
+                // If '});' is not found, try finding the last '}'
+                $position = strrpos($fileContent, '}');
+            }
 
-            // Write the updated content back to the routes file
-            File::put($routesFilePath, $newContent);
-            $this->info("Routes for {$controllerName} added to " . ($isApi ? 'api.php' : 'web.php') . " before the last });");
+            if ($position !== false) {
+                // Insert the new route before the last '});' or '}'
+                $newContent = substr_replace($fileContent, PHP_EOL . $routeTemplate . PHP_EOL, $position, 0);
+
+                // Write the updated content back to the routes file
+                File::put($routesFilePath, $newContent);
+                $this->info("Routes for {$controllerName} added to " . ($isApi ? 'api.php' : 'web.php') . " before the last });");
+            } else {
+                // If no closing '});' or '}' is found, append the routes to the file
+                File::append($routesFilePath, PHP_EOL . $routeTemplate);
+                $this->info("Routes for {$controllerName} appended to " . ($isApi ? 'api.php' : 'web.php'));
+            }
         } else {
-            // If no closing '});' or '}' is found, append the routes to the file
-            File::append($routesFilePath, PHP_EOL . $routeTemplate);
-            $this->info("Routes for {$controllerName} appended to " . ($isApi ? 'api.php' : 'web.php'));
+            $this->error("Routes file not found at {$routesFilePath}");
         }
-    } else {
-        $this->error("Routes file not found at {$routesFilePath}");
     }
-}
+
 
 
 
