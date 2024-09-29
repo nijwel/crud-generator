@@ -56,7 +56,7 @@ php artisan make:crud {ModelName} --api
 ```
 Example:
 ```bash
-php artisan make:crud Product --api --m --db
+php artisan make:crud Product --api --m --db --r
 ```
 
 This will create:
@@ -64,11 +64,13 @@ This will create:
 * A model Product.php in the app/Models/ directory.
 * An API-specific controller ProductController.php that returns JSON responses.
 * A migration file in the database/migrations/ directory.
+* Some route content in the routes/web.
 
 Note:
  * if you need only api controller just call --api
  * if you need only model just call --m
  * if you need only DB just call --db
+ * if you need only route content just call --r
 
 ### 3. Generate CRUD with Namespace
 If you want to generate files within a specific namespace, use forward slashes (/) to define the namespace.
